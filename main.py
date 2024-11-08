@@ -1,6 +1,6 @@
 import sys
-from constants import GRID_SIZE
-from ui import GridUI
+from modules.constants import GRID_SIZE
+from modules.ui import GridUI
 
 def print_usage():
     print("\nUsage: python main.py <grid_type>")

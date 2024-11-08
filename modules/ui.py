@@ -1,7 +1,7 @@
 import tkinter as tk
 import time
-from algorithm import a_star
-from constants import *
+from modules.algorithm import a_star
+from modules.constants import *
 
 
 class GridUI:
@@ -17,7 +17,7 @@ class GridUI:
         self.root.title("A* Pathfinding Visualization")
 
         self.heading = tk.Label(
-            self.root, text="Maze solver using A star", font=("Helvetica", 18, "bold"))
+            self.root, text="Maze Optimal Path Finder using A star", font=("Helvetica", 18, "bold"))
         self.heading.pack(pady=10)
 
         self.canvas = tk.Canvas(
@@ -58,7 +58,7 @@ class GridUI:
         new_color = WALKABLE_COLOR if self.grid[x][y] == 1 else OBSTACLE_COLOR
         self.update_cell(x, y, new_color, 0)
 
-    def update_cell(self, x, y, color, sleep=0.06):
+    def update_cell(self, x, y, color, sleep=0.0085):
         """Update the color of a specific cell."""
         self.canvas.create_rectangle(
             y * CELL_SIZE, x * CELL_SIZE,
@@ -99,7 +99,7 @@ class GridUI:
                 self.update_cell(x, y, PATH_COLOR)
 
         if path:
-            self.status_label.config(text="Path found.")
+            self.status_label.config(text="Path found. Cost: " + str(len(path) - 1))
 
     def reset_grid_colors(self):
         """Reset grid colors to black and white for final path tracing."""

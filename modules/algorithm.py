@@ -1,5 +1,5 @@
 import heapq
-from helper import heuristic, get_neighbors, reconstruct_path
+from modules.helper import heuristic, get_neighbors, reconstruct_path
 
 def a_star(start: tuple, goal: tuple, grid: list, n: int) -> tuple:
     """Perform A* search to find the shortest path from start to goal and track visited nodes."""
