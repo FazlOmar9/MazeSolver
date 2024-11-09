@@ -1,6 +1,6 @@
-# Maze Solver with A*
+# Warehouse Path Finder with A* for N jobs
 
-This project visualizes the A* pathfinding algorithm using a grid-based UI built with Tkinter.
+This project visualizes the A* pathfinding algorithm for finding paths for n jobs using a grid-based UI built with Tkinter.
 
 ## Requirements
 

@@ -7,17 +7,17 @@ from modules.constants import *
 class GridUI:
     """Class to create a grid-based UI for the A* pathfinding visualization."""
 
-    def __init__(self, grid: str, start: tuple, goal: tuple):
+    def __init__(self, grid: str, start: tuple, goals: list):
         self.root = tk.Tk()
         self.grid_option = grid
-        self.grid = DEFAULT_GRID if (grid == "default") else EMPTY_GRID
+        self.grid = DEFAULT_GRID if grid == "default" else AMAZON_WAREHOUSE_GRID
         self.start = start
-        self.goal = goal
+        self.goals = goals
 
         self.root.title("A* Pathfinding Visualization")
 
         self.heading = tk.Label(
-            self.root, text="Maze Optimal Path Finder using A star", font=("Helvetica", 18, "bold"))
+            self.root, text="Warehouse Path Finder for N Jobs", font=("Helvetica", 18, "bold"))
         self.heading.pack(pady=10)
 
         self.canvas = tk.Canvas(
@@ -28,8 +28,12 @@ class GridUI:
             self.root, text="", font=("Helvetica", 14))
         self.status_label.pack(pady=10)
 
+        self.job_label = tk.Label(
+            self.root, text="Jobs completed: 0", font=("Helvetica", 14))
+        self.job_label.pack(pady=10)
+
         self.run_button = tk.Button(self.root, text="Run", command=lambda: self.run(
-            self.start, self.goal), bg="green", fg="white", font=("Helvetica", 12, "bold"))
+            self.start, self.goals), bg="green", fg="white", font=("Helvetica", 12, "bold"))
         self.run_button.pack(pady=10)
 
         self.clear_button = tk.Button(
@@ -58,7 +62,7 @@ class GridUI:
         new_color = WALKABLE_COLOR if self.grid[x][y] == 1 else OBSTACLE_COLOR
         self.update_cell(x, y, new_color, 0)
 
-    def update_cell(self, x, y, color, sleep=0.0085):
+    def update_cell(self, x, y, color, sleep=0.001):
         """Update the color of a specific cell."""
         self.canvas.create_rectangle(
             y * CELL_SIZE, x * CELL_SIZE,
@@ -69,14 +73,14 @@ class GridUI:
         if sleep:
             time.sleep(sleep)
 
-    def visualize_path(self, path, visited_nodes):
+    def visualize_path(self, path, visited_nodes, start, goal):
         """Visualize the A* pathfinding process."""
         self.status_label.config(text="Searching for path...")
 
         # Show all visited nodes
         for node in visited_nodes:
             x, y = node
-            if (x, y) not in (self.start, self.goal):
+            if (x, y) not in (start, goal):
                 self.update_cell(x, y, VISITED_COLOR)
         time.sleep(0.5)
 
@@ -84,22 +88,23 @@ class GridUI:
 
         if path == None:
             self.status_label.config(text="Path not found.")
-            self.update_cell(self.start[0], self.start[1], "red", 0)
-            self.update_cell(self.goal[0], self.goal[1], "red", 0)
+            self.update_cell(start[0], start[1], "red", 0)
+            self.update_cell(goal[0], goal[1], "red", 0)
             return
 
         self.status_label.config(text="Tracing path...")
 
         for x, y in path:
-            if (x, y) == self.start:
+            if (x, y) == start:
                 self.update_cell(x, y, START_COLOR)
-            elif (x, y) == self.goal:
+            elif (x, y) == goal:
                 self.update_cell(x, y, GOAL_COLOR)
             else:
-                self.update_cell(x, y, PATH_COLOR)
+                self.update_cell(x, y, PATH_COLOR, 0.005)
 
         if path:
             self.status_label.config(text="Path found. Cost: " + str(len(path) - 1))
+        time.sleep(1)
 
     def reset_grid_colors(self):
         """Reset grid colors to black and white for final path tracing."""
@@ -110,16 +115,30 @@ class GridUI:
 
     def clear_grid(self):
         """Reset the grid to its initial state."""
-        self.grid = DEFAULT_GRID if self.grid_option == "default" else EMPTY_GRID
+        self.grid = DEFAULT_GRID if self.grid_option == "default" else AMAZON_WAREHOUSE_GRID
 
         self.draw_grid()
         self.status_label.config(text="Grid cleared.")
 
-    def run(self, start, goal):
-        """Run the A* algorithm and visualize the pathfinding."""
-        path, visited_nodes = a_star(
-            start, goal, self.grid, GRID_SIZE)
-        if visited_nodes:
-            self.visualize_path(path, visited_nodes)
-        else:
-            self.status_label.config(text="Path not found.")
+    def run(self, start, goals):
+        """Run the A* algorithm sequentially for each goal in the list."""
+        for i, goal in enumerate(goals):
+            path, visited_nodes = a_star(start, goal, self.grid, GRID_SIZE)
+            
+            if path:
+                self.visualize_path(path, visited_nodes, start, goal)
+                start = goal  # Set the next start to the current goal
+
+                if i < len(goals) - 1:  # Only clear if not the last goal
+                    self.clear_visited_nodes(visited_nodes)
+                
+                self.job_label.config(text=f"Jobs completed: {i + 1}")
+            else:
+                self.status_label.config(text=f"Path to goal {goal} not found.")
+                break  # Stop if a goal is unreachable
+    
+    def clear_visited_nodes(self, visited_nodes):
+        """Clear visited nodes from the grid, keeping only path cells."""
+        for x, y in visited_nodes:
+            if self.grid[x][y] == 1:
+                self.update_cell(x, y, WALKABLE_COLOR, 0)
