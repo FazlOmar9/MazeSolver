@@ -62,7 +62,7 @@ class GridUI:
         new_color = WALKABLE_COLOR if self.grid[x][y] == 1 else OBSTACLE_COLOR
         self.update_cell(x, y, new_color, 0)
 
-    def update_cell(self, x, y, color, sleep=0.001):
+    def update_cell(self, x, y, color, sleep=0):
         """Update the color of a specific cell."""
         self.canvas.create_rectangle(
             y * CELL_SIZE, x * CELL_SIZE,
@@ -82,7 +82,6 @@ class GridUI:
             x, y = node
             if (x, y) not in (start, goal):
                 self.update_cell(x, y, VISITED_COLOR)
-        time.sleep(0.5)
 
         self.reset_grid_colors()
 
